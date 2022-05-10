@@ -18,18 +18,6 @@
 
 ***/
 
-#ifndef FFMPEGDECODEWRAP_H
-#define FFMPEGDECODEWRAP_H
+#include "ffmpegdecodeframe.h"
 
-// Forward decls.
-struct AVStream;
-
-namespace olive {
-class FFmpegDecodeWrapper {
-public:
-
-private:
-};
-}
-
-#endif  // FFMPEGDECODEWRAP_H
+namespace olive {}
