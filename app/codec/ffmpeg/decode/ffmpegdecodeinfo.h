@@ -21,10 +21,37 @@
 #ifndef FFMPEGDECODEINFO_H
 #define FFMPEGDECODEINFO_H
 
+#include <node/project/footage/footagedescription.h>
+
+struct AVFormatContext;
+
 namespace olive {
-class FFmpegDecodeInfo {
+class FFmpegDecodeInfo final {
 public:
+  static constexpr auto DECODE_ID = "ffmpeg";
+
+  FFmpegDecodeInfo(const std::string &);
+  FFmpegDecodeInfo(const FFmpegDecodeInfo &) = delete;
+  FFmpegDecodeInfo(FFmpegDecodeInfo &&) = delete;
+  FFmpegDecodeInfo &operator=(const FFmpegDecodeInfo &) = delete;
+  FFmpegDecodeInfo &operator=(FFmpegDecodeInfo &&) = delete;
+
+  bool is_valid() const noexcept { return info_is_valid_; }
+  explicit operator bool() const noexcept { return is_valid(); }
+
+  ~FFmpegDecodeInfo();
+
 private:
+
+  bool info_invalidated(int av_err_code) noexcept;
+
+  void iterate_footage_streams();
+  std::int64_t footage_duration() const noexcept;
+
+  AVFormatContext *fmt_ctx_{nullptr};
+  bool info_is_valid_{false};
+
+  FootageDescription footage_desc{DECODE_ID};
 };
 }
 
