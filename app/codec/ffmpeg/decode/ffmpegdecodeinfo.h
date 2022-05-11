@@ -35,7 +35,6 @@ public:
   FFmpegDecodeInfo &operator=(FFmpegDecodeInfo &&) = delete;
 
 private:
-  void iterate_footage_streams();
   std::int64_t footage_duration() const noexcept;
 
   FootageDescription footage_desc{DECODE_ID};

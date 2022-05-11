@@ -29,8 +29,6 @@ FFmpegDecodeInfo::FFmpegDecodeInfo(const std::string &filename) {
   input_open_internal(filename);
 }
 
-void FFmpegDecodeInfo::iterate_footage_streams() {}
-
 std::int64_t FFmpegDecodeInfo::footage_duration() const noexcept {
   return get_format_ctx()->duration;
 }
