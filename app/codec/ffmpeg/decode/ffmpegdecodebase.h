@@ -77,7 +77,7 @@ protected:
   AVFormatContext *get_format_ctx() const noexcept { return format_ctx_; }
   const AVCodec *get_codec() const noexcept { return codec_; }
   AVCodecContext *get_codec_ctx() const noexcept { return codec_ctx_; }
-  int get_best_vid_stream_id() const noexcept { return best_vid_stream_id_; }
+  int get_best_video_stream_id() const noexcept { return best_vid_stream_id_; }
 
 private:
   AVFormatContext *format_ctx_{nullptr};

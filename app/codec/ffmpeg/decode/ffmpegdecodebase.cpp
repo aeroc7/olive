@@ -105,9 +105,9 @@ void FFmpegDecode::find_decoder() {
 }
 
 int FFmpegDecode::get_decoder_id() noexcept {
-  Q_ASSERT(get_best_vid_stream_id() >= 0);
+  Q_ASSERT(get_best_video_stream_id() >= 0);
 
-  const AVCodecID id = format_ctx_->streams[get_best_vid_stream_id()]->codecpar->codec_id;
+  const AVCodecID id = format_ctx_->streams[get_best_video_stream_id()]->codecpar->codec_id;
 
   return id;
 }
@@ -117,8 +117,8 @@ void FFmpegDecode::setup_decoder() {
   Q_ASSERT(get_format_ctx());
 
   codec_ctx_orig_ =
-      ffmpegav_alloc_and_set_ctx(get_codec(), get_format_ctx()->streams[get_best_vid_stream_id()]->codecpar);
-  codec_ctx_ = ffmpegav_alloc_and_set_ctx(get_codec(), get_format_ctx()->streams[get_best_vid_stream_id()]->codecpar);
+      ffmpegav_alloc_and_set_ctx(get_codec(), get_format_ctx()->streams[get_best_video_stream_id()]->codecpar);
+  codec_ctx_ = ffmpegav_alloc_and_set_ctx(get_codec(), get_format_ctx()->streams[get_best_video_stream_id()]->codecpar);
 }
 
 void FFmpegDecode::open_codec() {
