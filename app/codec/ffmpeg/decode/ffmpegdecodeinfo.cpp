@@ -57,6 +57,7 @@ void FFmpegDecodeInfo::iterate_footage_streams() {
 
     switch (avstream->codecpar->codec_type) {
       case AVMEDIA_TYPE_VIDEO:
+        
       case AVMEDIA_TYPE_AUDIO:
       default:
         break;
