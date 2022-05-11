@@ -21,21 +21,18 @@
 #ifndef FFMPEGDECODEBASE_H
 #define FFMPEGDECODEBASE_H
 
+#include "../ffmpegwrappers.h"
+
 #include <array>
-#include <memory>
 #include <string>
 
-extern "C" {
-#include <libavutil/frame.h>
-}
+struct AVFormatContext;
+struct AVCodecContext;
+struct AVCodec;
+struct AVPacket;
+struct SwsContext;
 
 namespace olive {
-struct AvFramePtrDeleter {
-  void operator()(AVFrame *f) noexcept { av_frame_free(&f); }
-};
-
-using AVFramePtr = std::unique_ptr<AVFrame, AvFramePtrDeleter>;
-
 enum class DecoderErrorDesc { FAILURE = -1, SUCCESS = 0 };
 class DecoderError {
 public:
@@ -54,6 +51,40 @@ public:
 private:
   DecoderErrorDesc desc{DecoderErrorDesc::SUCCESS};
   int err_code{};
+};
+
+class FFmpegDecode {
+public:
+  static constexpr auto DECODE_ID = "ffmpeg";
+
+  FFmpegDecode(const FFmpegDecode &) = delete;
+  FFmpegDecode(FFmpegDecode &&) = delete;
+  FFmpegDecode &operator=(const FFmpegDecode &) = delete;
+  FFmpegDecode &operator=(FFmpegDecode &&) = delete;
+
+  FFmpegDecode() = default;
+  virtual ~FFmpegDecode();
+
+protected:
+  virtual void input_open_internal(const std::string &);
+
+  void find_best_stream();
+  void find_decoder();
+  int get_decoder_id() noexcept;
+  void setup_decoder();
+  void open_codec();
+
+  AVFormatContext *get_format_ctx() const noexcept { return format_ctx_; }
+  const AVCodec *get_codec() const noexcept { return codec_; }
+  AVCodecContext *get_codec_ctx() const noexcept { return codec_ctx_; }
+  int get_best_vid_stream_id() const noexcept { return best_vid_stream_id_; }
+
+private:
+  AVFormatContext *format_ctx_{nullptr};
+  const AVCodec *codec_{nullptr};
+  AVCodecContext *codec_ctx_orig_{nullptr}, *codec_ctx_{nullptr};
+
+  int best_vid_stream_id_{-1};
 };
 }  // namespace olive
 

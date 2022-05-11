@@ -18,6 +18,21 @@
 
 ***/
 
-#include "ffmpegdecodeframe.h"
+#ifndef FFMPEGWRAPPERS_H
+#define FFMPEGWRAPPERS_H
 
-namespace olive {}  // namespace olive
+extern "C" {
+#include <libavutil/frame.h>
+}
+
+#include <memory>
+
+namespace olive {
+struct AvFramePtrDeleter {
+  void operator()(AVFrame *f) noexcept { av_frame_free(&f); }
+};
+
+using AVFramePtr = std::unique_ptr<AVFrame, AvFramePtrDeleter>;
+}  // namespace olive
+
+#endif  // FFMPEGWRAPPERS_H

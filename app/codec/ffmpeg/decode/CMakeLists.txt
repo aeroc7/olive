@@ -22,5 +22,7 @@ set(OLIVE_SOURCES
   codec/ffmpeg/decode/ffmpegdecodeframe.h
   codec/ffmpeg/decode/ffmpegdecodeinfo.cpp
   codec/ffmpeg/decode/ffmpegdecodeinfo.h
+  codec/ffmpeg/decode/ffmpegdecodebase.cpp
+  codec/ffmpeg/decode/ffmpegdecodebase.h
   PARENT_SCOPE
 )
