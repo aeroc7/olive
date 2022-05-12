@@ -20,8 +20,85 @@
 
 #include "ffmpegdecodeframe.h"
 
+extern "C" {
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavutil/imgutils.h>
+#include <libswscale/swscale.h>
+}
+
 namespace olive {
-bool FFmpegDecodeFrame::open(const std::string &filename) {
-  return input_open_internal(filename);
+bool FFmpegDecodeFrame::open(const std::string &filename) { return input_open_internal(filename); }
+
+void FFmpegDecodeFrame::setup_cnvt_process() noexcept {
+  if (buf_size_) {
+    return;
+  }
+
+  buf_size_ =
+      av_image_get_buffer_size(AV_PIX_FMT_RGB24, get_codec_ctx()->width, get_codec_ctx()->height, FRAME_BUF_ALIGNMENT);
+  cnvt_buf_ = static_cast<std::uint8_t *>(av_malloc(buf_size_ * sizeof(std::uint8_t)));
+
+  av_image_fill_arrays(frame_cnvt_->data, frame_cnvt_->linesize, cnvt_buf_, AV_PIX_FMT_RGB24, get_codec_ctx()->width,
+                       get_codec_ctx()->height, FRAME_BUF_ALIGNMENT);
+
+  sws_ctx_ =
+      sws_getContext(get_codec_ctx()->width, get_codec_ctx()->height, get_codec_ctx()->pix_fmt, get_codec_ctx()->width,
+                     get_codec_ctx()->height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
+}
+
+AVFramePtr FFmpegDecodeFrame::decode_frame() {
+  try {
+    frame_ = AVFramePtr{av_frame_alloc()};
+    frame_cnvt_ = AVFramePtr{av_frame_alloc()};
+    AVPacketPtr pkt{av_packet_alloc()};
+    int ret{};
+
+    while (av_read_frame(get_format_ctx(), pkt.get()) >= 0) {
+      if (pkt->stream_index == get_best_video_stream_id()) {
+        ret = avcodec_send_packet(get_codec_ctx(), pkt.get());
+        if (ret < 0) {
+          qWarning() << "Error sending packet for decoding.";
+          throw DecoderError{DecoderErrorDesc::FAILURE, ret};
+        }
+
+        bool frm_success = (ret >= 0);
+
+        while (frm_success) {
+          ret = avcodec_receive_frame(get_codec_ctx(), frame_.get());
+
+          if (ret == AVERROR(EAGAIN)) {
+            frm_success = false;
+            break;
+          } else if(ret == AVERROR_EOF) {
+            break;
+          } else if (ret < 0) {
+            qWarning() << "Error while decoding.";
+            throw DecoderError{DecoderErrorDesc::FAILURE, ret};
+          }
+
+          sws_scale(sws_ctx_, static_cast<uint8_t const *const *>(frame_->data), frame_->linesize, 0,
+                    get_codec_ctx()->height, frame_cnvt_->data, frame_cnvt_->linesize);
+
+          frame_cnvt_->width = get_codec_ctx()->width;
+          frame_cnvt_->height = get_codec_ctx()->height;
+
+          return std::move(frame_cnvt_);
+        }
+
+        if (frm_success) {
+          break;
+        }
+      }
+    }
+
+  } catch (const DecoderError &e) {
+    qWarning() << "Caught exception: " << QString::fromStdString(e.error_string()) << " (code " << e.error_code()
+               << ")";
+  } catch (const std::exception &e) {
+    qWarning() << "Caught exception: " << e.what();
+  }
+
+  return nullptr;
 }
 }  // namespace olive

@@ -31,17 +31,28 @@ bool FFmpegDecoder::OpenInternal()
   const auto filename_as_stdstr = stream().filename().toUtf8().toStdString();
   frame_decode_ = std::make_unique<FFmpegDecodeFrame>();
 
-  return frame_decode_->open(filename_as_stdstr);
+  const auto success = frame_decode_->open(filename_as_stdstr);
+
+  return success;
 }
 
 FramePtr FFmpegDecoder::RetrieveVideoInternal(const rational &timecode, const RetrieveVideoParams &params, const QAtomicInt *cancelled)
 {
-  
-  return nullptr;
+  FramePtr fp = Frame::Create();
+
+  auto next_frame = frame_decode_->decode_frame();
+
+  fp->set_video_params(VideoParams{next_frame->width, next_frame->height, VideoParams::kFormatUnsigned8, 3});
+
+  fp->set_timestamp(timecode);
+  fp->allocate();
+  memcpy(fp->data(), next_frame->data, fp->allocated_size());
+  return fp;
 }
 
 void FFmpegDecoder::CloseInternal()
 {
+  frame_decode_.reset();
 }
 
 // Generate footage info from file, must be re-entrant
@@ -52,13 +63,13 @@ FootageDescription FFmpegDecoder::Probe(const QString &filename, const QAtomicIn
 
   const auto fstr_as_std = filename.toUtf8().toStdString();
   FFmpegDecodeInfo probe_info{fstr_as_std};
-  
+
   return probe_info.get();
 }
 
 bool FFmpegDecoder::ConformAudioInternal(const QVector<QString> &filenames, const AudioParams &params, const QAtomicInt *cancelled)
 {
-  return false;
+  return true;
 }
 
 QString FFmpegDecoder::id() const

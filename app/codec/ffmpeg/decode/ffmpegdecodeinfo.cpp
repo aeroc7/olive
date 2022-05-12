@@ -56,7 +56,10 @@ std::tuple<AVFramePtr, int> FFmpegDecodeInfo::recieve_single_frame() {
         while (frm_success) {
           ret = avcodec_receive_frame(get_codec_ctx(), frame.get());
 
-          if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+          if (ret == AVERROR(EAGAIN)) {
+            frm_success = false;
+            break;
+          } else if(ret == AVERROR_EOF) {
             break;
           } else if (ret < 0) {
             qWarning() << "Error while decoding.";
