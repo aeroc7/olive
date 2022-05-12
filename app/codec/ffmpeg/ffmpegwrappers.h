@@ -26,6 +26,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavutil/channel_layout.h>
 #include <libavutil/frame.h>
+#include <libavcodec/packet.h>
 }
 
 #include <codec/ffmpeg/ffmpegframepool.h>
