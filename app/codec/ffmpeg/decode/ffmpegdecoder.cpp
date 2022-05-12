@@ -74,7 +74,7 @@ FootageDescription FFmpegDecoder::Probe(const QString &filename, const QAtomicIn
 
 bool FFmpegDecoder::ConformAudioInternal(const QVector<QString> &filenames, const AudioParams &params, const QAtomicInt *cancelled)
 {
-  return false;
+  return true;
 }
 
 QString FFmpegDecoder::id() const
