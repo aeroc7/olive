@@ -58,6 +58,6 @@ bool FFmpegDecoder::ConformAudioInternal(const QVector<QString> &filenames, cons
 
 QString FFmpegDecoder::id() const
 {
-  return FFmpegDecode::DECODE_ID;
+  return FFmpegDecodeBase::DECODE_ID;
 }
 }

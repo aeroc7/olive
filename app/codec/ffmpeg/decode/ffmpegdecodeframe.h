@@ -24,7 +24,7 @@
 #include "ffmpegdecodebase.h"
 
 namespace olive {
-class FFmpegDecodeFrame : public FFmpegDecode {
+class FFmpegDecodeFrame : public FFmpegDecodeBase {
 public:
 };
 }  // namespace olive

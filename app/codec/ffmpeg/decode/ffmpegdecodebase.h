@@ -53,17 +53,17 @@ private:
   int err_code{};
 };
 
-class FFmpegDecode {
+class FFmpegDecodeBase {
 public:
   static constexpr auto DECODE_ID = "ffmpeg";
 
-  FFmpegDecode(const FFmpegDecode &) = delete;
-  FFmpegDecode(FFmpegDecode &&) = delete;
-  FFmpegDecode &operator=(const FFmpegDecode &) = delete;
-  FFmpegDecode &operator=(FFmpegDecode &&) = delete;
+  FFmpegDecodeBase(const FFmpegDecodeBase &) = delete;
+  FFmpegDecodeBase(FFmpegDecodeBase &&) = delete;
+  FFmpegDecodeBase &operator=(const FFmpegDecodeBase &) = delete;
+  FFmpegDecodeBase &operator=(FFmpegDecodeBase &&) = delete;
 
-  FFmpegDecode() = default;
-  virtual ~FFmpegDecode();
+  FFmpegDecodeBase() = default;
+  virtual ~FFmpegDecodeBase();
 
 protected:
   virtual void input_open_internal(const std::string &);

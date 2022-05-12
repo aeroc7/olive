@@ -52,7 +52,7 @@ AVCodecContext *ffmpegav_alloc_and_set_ctx(const AVCodec *codec, const AVCodecPa
 }  // namespace
 
 namespace olive {
-void FFmpegDecode::input_open_internal(const std::string &url) {
+void FFmpegDecodeBase::input_open_internal(const std::string &url) {
   try {
     int ret{};
 
@@ -82,7 +82,7 @@ void FFmpegDecode::input_open_internal(const std::string &url) {
   }
 }
 
-void FFmpegDecode::find_best_stream() {
+void FFmpegDecodeBase::find_best_stream() {
   int ret{};
 
   ret = av_find_best_stream(format_ctx_, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
@@ -94,7 +94,7 @@ void FFmpegDecode::find_best_stream() {
   best_vid_stream_id_ = ret;
 }
 
-void FFmpegDecode::find_decoder() {
+void FFmpegDecodeBase::find_decoder() {
   const auto decoder_id = get_decoder_id();
 
   codec_ = avcodec_find_decoder(static_cast<AVCodecID>(decoder_id));
@@ -104,7 +104,7 @@ void FFmpegDecode::find_decoder() {
   }
 }
 
-int FFmpegDecode::get_decoder_id() noexcept {
+int FFmpegDecodeBase::get_decoder_id() noexcept {
   Q_ASSERT(get_best_video_stream_id() >= 0);
 
   const AVCodecID id = format_ctx_->streams[get_best_video_stream_id()]->codecpar->codec_id;
@@ -112,7 +112,7 @@ int FFmpegDecode::get_decoder_id() noexcept {
   return id;
 }
 
-void FFmpegDecode::setup_decoder() {
+void FFmpegDecodeBase::setup_decoder() {
   Q_ASSERT(get_codec());
   Q_ASSERT(get_format_ctx());
 
@@ -121,7 +121,7 @@ void FFmpegDecode::setup_decoder() {
   codec_ctx_ = ffmpegav_alloc_and_set_ctx(get_codec(), get_format_ctx()->streams[get_best_video_stream_id()]->codecpar);
 }
 
-void FFmpegDecode::open_codec() {
+void FFmpegDecodeBase::open_codec() {
   int ret{};
 
   // auto-determine thread number
@@ -142,7 +142,7 @@ void FFmpegDecode::open_codec() {
   }
 }
 
-FFmpegDecode::~FFmpegDecode() {
+FFmpegDecodeBase::~FFmpegDecodeBase() {
   avcodec_close(codec_ctx_);
 
   avcodec_free_context(&codec_ctx_);

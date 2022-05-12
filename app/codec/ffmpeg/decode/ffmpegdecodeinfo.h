@@ -26,7 +26,7 @@
 #include "ffmpegdecodebase.h"
 
 namespace olive {
-class FFmpegDecodeInfo : public FFmpegDecode {
+class FFmpegDecodeInfo : public FFmpegDecodeBase {
 public:
   FFmpegDecodeInfo(const std::string &);
   FFmpegDecodeInfo(const FFmpegDecodeInfo &) = delete;
