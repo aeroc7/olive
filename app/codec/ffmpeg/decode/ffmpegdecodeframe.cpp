@@ -20,4 +20,8 @@
 
 #include "ffmpegdecodeframe.h"
 
-namespace olive {}  // namespace olive
+namespace olive {
+bool FFmpegDecodeFrame::open(const std::string &filename) {
+  return input_open_internal(filename);
+}
+}  // namespace olive

@@ -28,11 +28,15 @@ extern "C" {
 namespace olive {
 bool FFmpegDecoder::OpenInternal()
 {
-  return true;
+  const auto filename_as_stdstr = stream().filename().toUtf8().toStdString();
+  frame_decode_ = std::make_unique<FFmpegDecodeFrame>();
+
+  return frame_decode_->open(filename_as_stdstr);
 }
 
 FramePtr FFmpegDecoder::RetrieveVideoInternal(const rational &timecode, const RetrieveVideoParams &params, const QAtomicInt *cancelled)
 {
+  
   return nullptr;
 }
 
@@ -46,7 +50,8 @@ FootageDescription FFmpegDecoder::Probe(const QString &filename, const QAtomicIn
   // We shouldn't be here for very long *at all*, so no point
   Q_UNUSED(cancelled);
 
-  FFmpegDecodeInfo probe_info{filename.toStdString()};
+  const auto fstr_as_std = filename.toUtf8().toStdString();
+  FFmpegDecodeInfo probe_info{fstr_as_std};
   
   return probe_info.get();
 }

@@ -52,7 +52,7 @@ AVCodecContext *ffmpegav_alloc_and_set_ctx(const AVCodec *codec, const AVCodecPa
 }  // namespace
 
 namespace olive {
-void FFmpegDecodeBase::input_open_internal(const std::string &url) {
+bool FFmpegDecodeBase::input_open_internal(const std::string &url) {
   try {
     int ret{};
 
@@ -74,11 +74,14 @@ void FFmpegDecodeBase::input_open_internal(const std::string &url) {
     setup_decoder();
     open_codec();
 
+    return true;
   } catch (const DecoderError &e) {
     qWarning() << "Caught exception: " << QString::fromStdString(e.error_string()) << " (code " << e.error_code()
                << ")";
+    return false;
   } catch (const std::exception &e) {
     qWarning() << "Caught exception: " << e.what();
+    return false;
   }
 }
 

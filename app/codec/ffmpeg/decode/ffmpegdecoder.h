@@ -21,6 +21,8 @@
 #ifndef FFMPEGDECODER_H
 #define FFMPEGDECODER_H
 
+#include "ffmpegdecodeframe.h"
+
 #include <codec/decoder.h>
 
 struct AVStream;
@@ -54,6 +56,7 @@ protected:
   virtual void CloseInternal() override;
 
 private:
+  std::unique_ptr<FFmpegDecodeFrame> frame_decode_;
 };
 
 }

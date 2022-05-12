@@ -66,7 +66,7 @@ public:
   virtual ~FFmpegDecodeBase();
 
 protected:
-  virtual void input_open_internal(const std::string &);
+  virtual bool input_open_internal(const std::string &);
 
   void find_best_stream();
   void find_decoder();

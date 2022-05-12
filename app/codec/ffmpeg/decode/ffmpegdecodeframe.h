@@ -26,6 +26,7 @@
 namespace olive {
 class FFmpegDecodeFrame : public FFmpegDecodeBase {
 public:
+  bool open(const std::string &);
 };
 }  // namespace olive
 
