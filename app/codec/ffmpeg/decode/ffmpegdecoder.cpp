@@ -19,6 +19,7 @@
 ***/
 
 #include "ffmpegdecoder.h"
+#include "ffmpegdecodeinfo.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -44,7 +45,10 @@ FootageDescription FFmpegDecoder::Probe(const QString &filename, const QAtomicIn
 {
   // We shouldn't be here for very long *at all*, so no point
   Q_UNUSED(cancelled);
-  return {};
+
+  FFmpegDecodeInfo probe_info{filename.toStdString()};
+  
+  return probe_info.get();
 }
 
 bool FFmpegDecoder::ConformAudioInternal(const QVector<QString> &filenames, const AudioParams &params, const QAtomicInt *cancelled)
@@ -52,54 +56,8 @@ bool FFmpegDecoder::ConformAudioInternal(const QVector<QString> &filenames, cons
   return true;
 }
 
-constexpr VideoParams::Format FFmpegDecoder::GetNativePixelFormat(AVPixelFormat pix_fmt) noexcept
-{
-  switch (pix_fmt) {
-  case AV_PIX_FMT_RGB24:
-  case AV_PIX_FMT_RGBA:
-    return VideoParams::kFormatUnsigned8;
-  case AV_PIX_FMT_RGB48:
-  case AV_PIX_FMT_RGBA64:
-    return VideoParams::kFormatUnsigned16;
-  default:
-    return VideoParams::kFormatInvalid;
-  }
-}
-
 QString FFmpegDecoder::id() const
 {
-  return QStringLiteral("ffmpeg");
-}
-
-constexpr int FFmpegDecoder::GetNativeChannelCount(AVPixelFormat pix_fmt) noexcept
-{
-  switch (pix_fmt) {
-  case AV_PIX_FMT_RGB24:
-  case AV_PIX_FMT_RGB48:
-    return VideoParams::kRGBChannelCount;
-  case AV_PIX_FMT_RGBA:
-  case AV_PIX_FMT_RGBA64:
-    return VideoParams::kRGBAChannelCount;
-  default:
-    return 0;
-  }
-}
-
-std::int64_t FFmpegDecoder::ValidateChannelLayout(const AVStream* stream) noexcept
-{
-  if (stream->codecpar->channel_layout) {
-    return stream->codecpar->channel_layout;
-  }
-
-  return av_get_default_channel_layout(stream->codecpar->channels);
-}
-
-constexpr const char *FFmpegDecoder::GetInterlacingModeInFFmpeg(VideoParams::Interlacing interlacing) noexcept
-{
-  if (interlacing == VideoParams::kInterlacedTopFirst) {
-    return "tff";
-  }
-
-  return "bff";
+  return FFmpegDecode::DECODE_ID;
 }
 }

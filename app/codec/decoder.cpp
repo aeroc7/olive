@@ -175,7 +175,7 @@ QVector<DecoderPtr> Decoder::ReceiveListOfAllDecoders()
 
   // The order in which these decoders are added is their priority when probing. Hence FFmpeg should usually be last,
   // since it supports so many formats and we presumably want to override those formats with a more specific decoder.
-  decoders.append(std::make_shared<OIIODecoder>());
+  //decoders.append(std::make_shared<OIIODecoder>());
   decoders.append(std::make_shared<FFmpegDecoder>());
 
   return decoders;

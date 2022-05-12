@@ -34,13 +34,20 @@ public:
   FFmpegDecodeInfo &operator=(const FFmpegDecodeInfo &) = delete;
   FFmpegDecodeInfo &operator=(FFmpegDecodeInfo &&) = delete;
 
+  FootageDescription get() const noexcept;
+
 protected:
-  std::int64_t footage_duration() const noexcept;
-  AVFramePtr recieve_single_frame();
+  std::tuple<AVFramePtr, int> recieve_single_frame();
+  void set_frame_params();
+
+  rational get_pixel_aspect_ratio(AVFrame *f) noexcept;
+  rational get_frame_rate(AVFrame *f) noexcept;
+  AVStream *get_video_avstream() noexcept;
 
 private:
   FootageDescription footage_desc{DECODE_ID};
-  
+  VideoParams p;
+
 };
 }
 

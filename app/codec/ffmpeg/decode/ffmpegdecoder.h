@@ -22,7 +22,6 @@
 #define FFMPEGDECODER_H
 
 #include <codec/decoder.h>
-#include <codec/ffmpeg/ffmpegframepool.h>
 
 struct AVStream;
 
@@ -55,11 +54,6 @@ protected:
   virtual void CloseInternal() override;
 
 private:
-
-  constexpr VideoParams::Format GetNativePixelFormat(AVPixelFormat pix_fmt) noexcept;
-  constexpr int GetNativeChannelCount(AVPixelFormat pix_fmt) noexcept;
-  std::int64_t ValidateChannelLayout(const AVStream *stream) noexcept;
-  constexpr const char* GetInterlacingModeInFFmpeg(VideoParams::Interlacing interlacing) noexcept;
 };
 
 }
