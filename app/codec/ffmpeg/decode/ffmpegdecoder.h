@@ -43,7 +43,7 @@ public:
   virtual QString id() const override;
 
   virtual bool SupportsVideo() override{return true;}
-  virtual bool SupportsAudio() override{return true;}
+  virtual bool SupportsAudio() override{return false;}
 
   virtual FootageDescription Probe(const QString &filename, const QAtomicInt *cancelled) const override;
 
