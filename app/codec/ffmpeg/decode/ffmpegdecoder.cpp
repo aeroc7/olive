@@ -69,7 +69,6 @@ FootageDescription FFmpegDecoder::Probe(const QString &filename, const QAtomicIn
 
   const auto fstr_as_std = filename.toUtf8().toStdString();
   FFmpegDecodeInfo probe_info{fstr_as_std};
-
   return probe_info.get();
 }
 
