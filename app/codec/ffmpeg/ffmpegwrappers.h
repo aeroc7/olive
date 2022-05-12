@@ -23,6 +23,7 @@
 
 extern "C" {
 #include <libavutil/frame.h>
+#include <libavcodec/packet.h>
 }
 
 #include <memory>
@@ -32,7 +33,12 @@ struct AvFramePtrDeleter {
   void operator()(AVFrame *f) noexcept { av_frame_free(&f); }
 };
 
+struct AvPacketPtrDeleter {
+  void operator()(AVPacket *f) noexcept { av_packet_free(&f); }
+};
+
 using AVFramePtr = std::unique_ptr<AVFrame, AvFramePtrDeleter>;
+using AVPacketPtr = std::unique_ptr<AVPacket, AvPacketPtrDeleter>;
 }  // namespace olive
 
 #endif  // FFMPEGWRAPPERS_H

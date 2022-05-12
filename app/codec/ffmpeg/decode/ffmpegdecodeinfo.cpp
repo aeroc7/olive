@@ -25,11 +25,52 @@ extern "C" {
 }
 
 namespace olive {
-FFmpegDecodeInfo::FFmpegDecodeInfo(const std::string &filename) {
-  input_open_internal(filename);
+FFmpegDecodeInfo::FFmpegDecodeInfo(const std::string &filename) { input_open_internal(filename); }
+
+AVFramePtr FFmpegDecodeInfo::recieve_single_frame() {
+  try {
+    AVPacketPtr pkt{av_packet_alloc()};
+    AVFramePtr frame{av_frame_alloc()};
+    int ret{};
+
+    while (av_read_frame(get_format_ctx(), pkt.get()) >= 0) {
+      if (pkt->stream_index == get_best_video_stream_id()) {
+        ret = avcodec_send_packet(get_codec_ctx(), pkt.get());
+        if (ret < 0) {
+          qWarning() << "Error sending packet for decoding.";
+          throw DecoderError{DecoderErrorDesc::FAILURE, ret};
+        }
+
+        bool frm_success = (ret >= 0);
+
+        while (frm_success) {
+          ret = avcodec_receive_frame(get_codec_ctx(), frame.get());
+
+          if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            break;
+          } else if (ret < 0) {
+            qWarning() << "Error while decoding.";
+            throw DecoderError{DecoderErrorDesc::FAILURE, ret};
+          }
+
+          return frame;
+        }
+
+        if (frm_success) {
+          break;
+        }
+      }
+    }
+
+  } catch (const DecoderError &e) {
+    qWarning() << "Caught exception: " << QString::fromStdString(e.error_string()) << " (code " << e.error_code()
+               << ")";
+  } catch (const std::exception &e) {
+    qWarning() << "Caught exception: " << e.what();
+  }
+
+  return {};
 }
 
-std::int64_t FFmpegDecodeInfo::footage_duration() const noexcept {
-  return get_format_ctx()->duration;
-}
+std::int64_t FFmpegDecodeInfo::footage_duration() const noexcept { return get_format_ctx()->duration; }
 }  // namespace olive

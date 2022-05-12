@@ -34,10 +34,13 @@ public:
   FFmpegDecodeInfo &operator=(const FFmpegDecodeInfo &) = delete;
   FFmpegDecodeInfo &operator=(FFmpegDecodeInfo &&) = delete;
 
-private:
+protected:
   std::int64_t footage_duration() const noexcept;
+  AVFramePtr recieve_single_frame();
 
+private:
   FootageDescription footage_desc{DECODE_ID};
+  
 };
 }
 
