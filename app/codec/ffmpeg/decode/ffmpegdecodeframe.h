@@ -27,7 +27,7 @@ namespace olive {
 class FFmpegDecodeFrame : public FFmpegDecodeBase {
 public:
   bool open(const std::string &);
-  AVFramePtr decode_frame();
+  AVFrame* decode_frame();
 protected:
 private:
   void setup_cnvt_process() noexcept;

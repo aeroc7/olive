@@ -42,10 +42,16 @@ FramePtr FFmpegDecoder::RetrieveVideoInternal(const rational &timecode, const Re
 
   auto next_frame = frame_decode_->decode_frame();
 
-  fp->set_video_params(VideoParams{next_frame->width, next_frame->height, VideoParams::kFormatUnsigned8, 3});
+  if (!next_frame) {
+    return {};
+  }
+
+  fp->set_video_params(VideoParams{next_frame->width, next_frame->height, VideoParams::kFormatUnsigned8, 3, 1, VideoParams::kInterlaceNone, 1});
 
   fp->set_timestamp(timecode);
   fp->allocate();
+  Q_ASSERT(fp->is_allocated());
+
   memcpy(fp->data(), next_frame->data, fp->allocated_size());
   return fp;
 }
