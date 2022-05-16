@@ -21,13 +21,14 @@
 #include "ffmpegdecoder.h"
 #include "ffmpegdecodeinfo.h"
 
+#include <common/ffmpegutils.h>
+
 extern "C" {
 #include <libavformat/avformat.h>
 }
 
 namespace olive {
-bool FFmpegDecoder::OpenInternal()
-{
+bool FFmpegDecoder::OpenInternal() {
   const auto filename_as_stdstr = stream().filename().toUtf8().toStdString();
   frame_decode_ = std::make_unique<FFmpegDecodeFrame>();
 
@@ -36,33 +37,31 @@ bool FFmpegDecoder::OpenInternal()
   return success;
 }
 
-FramePtr FFmpegDecoder::RetrieveVideoInternal(const rational &timecode, const RetrieveVideoParams &params, const QAtomicInt *cancelled)
-{
+FramePtr FFmpegDecoder::RetrieveVideoInternal(const rational &timecode, const RetrieveVideoParams &params,
+                                              const QAtomicInt *cancelled) {
   FramePtr fp = Frame::Create();
 
   auto next_frame = frame_decode_->decode_frame();
-
   if (!next_frame) {
     return {};
   }
 
-  fp->set_video_params(VideoParams{next_frame->width, next_frame->height, VideoParams::kFormatUnsigned8, 3, 1, VideoParams::kInterlaceNone, 1});
+  const auto compatible_pix_fmt = FFmpegUtils::GetCompatiblePixelFormat(static_cast<AVPixelFormat>(next_frame->format));
+
+  fp->set_video_params(VideoParams{next_frame->width, next_frame->height, GetNativePixelFormat(compatible_pix_fmt),
+                                   GetNativeChannelCount(compatible_pix_fmt), 1, VideoParams::kInterlaceNone, 1});
   fp->set_timestamp(timecode);
   fp->allocate();
-  Q_ASSERT(fp->is_allocated());
 
-  memcpy(fp->data(), next_frame->data[0], fp->allocated_size());
+  std::memcpy(fp->data(), next_frame->data[0], fp->allocated_size());
+
   return fp;
 }
 
-void FFmpegDecoder::CloseInternal()
-{
-  frame_decode_.reset();
-}
+void FFmpegDecoder::CloseInternal() { frame_decode_.reset(); }
 
 // Generate footage info from file, must be re-entrant
-FootageDescription FFmpegDecoder::Probe(const QString &filename, const QAtomicInt *cancelled) const
-{
+FootageDescription FFmpegDecoder::Probe(const QString &filename, const QAtomicInt *cancelled) const {
   // We shouldn't be here for very long *at all*, so no point
   Q_UNUSED(cancelled);
 
@@ -71,13 +70,10 @@ FootageDescription FFmpegDecoder::Probe(const QString &filename, const QAtomicIn
   return probe_info.get();
 }
 
-bool FFmpegDecoder::ConformAudioInternal(const QVector<QString> &filenames, const AudioParams &params, const QAtomicInt *cancelled)
-{
+bool FFmpegDecoder::ConformAudioInternal(const QVector<QString> &filenames, const AudioParams &params,
+                                         const QAtomicInt *cancelled) {
   return true;
 }
 
-QString FFmpegDecoder::id() const
-{
-  return FFmpegDecodeBase::DECODE_ID;
-}
-}
+QString FFmpegDecoder::id() const { return FFmpegDecodeBase::DECODE_ID; }
+}  // namespace olive

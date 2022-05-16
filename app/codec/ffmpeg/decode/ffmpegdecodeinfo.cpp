@@ -116,7 +116,7 @@ void FFmpegDecodeInfo::set_frame_params() {
   const auto compatible_pix_fmt =
       FFmpegUtils::GetCompatiblePixelFormat(static_cast<AVPixelFormat>(get_video_avstream()->codecpar->format));
 
-  // Missing? Manual duration-getting?
+  // Missing? Manual duration-getting? Not sure if necessary or not, TODO
   p.set_stream_index(get_best_video_stream_id());
   p.set_width(get_video_avstream()->codecpar->width);
   p.set_height(get_video_avstream()->codecpar->height);

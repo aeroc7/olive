@@ -35,6 +35,7 @@ private:
   SwsContext *sws_ctx_{nullptr};
   int buf_size_{};
   std::uint8_t *cnvt_buf_{nullptr};
+  AVPixelFormat ideal_pix_fmt_{};
 
   static constexpr auto FRAME_BUF_ALIGNMENT = 32;
 };

@@ -20,6 +20,8 @@
 
 #include "ffmpegdecodeframe.h"
 
+#include <common/ffmpegutils.h>
+
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -40,16 +42,19 @@ void FFmpegDecodeFrame::setup_cnvt_process() noexcept {
     return;
   }
 
+  const auto vid_stream = get_format_ctx()->streams[get_best_video_stream_id()];
+  ideal_pix_fmt_ = FFmpegUtils::GetCompatiblePixelFormat(static_cast<AVPixelFormat>(vid_stream->codecpar->format));
+
   buf_size_ =
-      av_image_get_buffer_size(AV_PIX_FMT_RGB24, get_codec_ctx()->width, get_codec_ctx()->height, FRAME_BUF_ALIGNMENT);
+      av_image_get_buffer_size(ideal_pix_fmt_, get_codec_ctx()->width, get_codec_ctx()->height, FRAME_BUF_ALIGNMENT);
   cnvt_buf_ = static_cast<std::uint8_t *>(av_malloc(buf_size_ * sizeof(std::uint8_t)));
 
-  av_image_fill_arrays(frame_cnvt_->data, frame_cnvt_->linesize, cnvt_buf_, AV_PIX_FMT_RGB24, get_codec_ctx()->width,
+  av_image_fill_arrays(frame_cnvt_->data, frame_cnvt_->linesize, cnvt_buf_, ideal_pix_fmt_, get_codec_ctx()->width,
                        get_codec_ctx()->height, FRAME_BUF_ALIGNMENT);
 
   sws_ctx_ =
       sws_getContext(get_codec_ctx()->width, get_codec_ctx()->height, get_codec_ctx()->pix_fmt, get_codec_ctx()->width,
-                     get_codec_ctx()->height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
+                     get_codec_ctx()->height, ideal_pix_fmt_, SWS_BILINEAR, nullptr, nullptr, nullptr);
 }
 
 AVFrame *FFmpegDecodeFrame::decode_frame() {
@@ -63,7 +68,6 @@ AVFrame *FFmpegDecodeFrame::decode_frame() {
 
     while (av_read_frame(get_format_ctx(), &pkt) >= 0) {
       if (pkt.stream_index == get_best_video_stream_id()) {
-        frame_->format = AV_PIX_FMT_RGB24;
         ret = avcodec_send_packet(get_codec_ctx(), &pkt);
         if (ret < 0) {
           qWarning() << "Error sending packet for decoding.";
@@ -78,7 +82,7 @@ AVFrame *FFmpegDecodeFrame::decode_frame() {
           if (ret == AVERROR(EAGAIN)) {
             frm_success = false;
             break;
-          } else if(ret == AVERROR_EOF) {
+          } else if (ret == AVERROR_EOF) {
             break;
           } else if (ret < 0) {
             qWarning() << "Error while decoding.";
@@ -90,6 +94,7 @@ AVFrame *FFmpegDecodeFrame::decode_frame() {
 
           frame_cnvt_->width = get_codec_ctx()->width;
           frame_cnvt_->height = get_codec_ctx()->height;
+          frame_cnvt_->format = ideal_pix_fmt_;
 
           return frame_cnvt_.get();
         }
