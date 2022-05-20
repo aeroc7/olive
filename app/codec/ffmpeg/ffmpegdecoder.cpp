@@ -82,62 +82,6 @@ bool FFmpegDecoder::OpenInternal()
   return false;
 }
 
-/*FramePtr FFmpegDecoder::RetrieveStillImage(const rational &timecode, const int &divider)
-{
-  // This is a still image
-  QString img_filename = stream().filename();
-
-  int64_t ts;
-
-  // If it's an image sequence, we'll probably need to transform the filename
-  if (stream().GetStream().video_type() == Track::kVideoTypeImageSequence) {
-    ts = stream().GetTimeInTimebaseUnits(timecode);
-
-    img_filename = TransformImageSequenceFileName(stream().filename(), ts);
-  } else {
-    ts = 0;
-  }
-
-  AVPacket* pkt = av_packet_alloc();
-  AVFrame* frame = av_frame_alloc();
-  FramePtr output_frame = nullptr;
-
-  Instance i;
-  i.Open(img_filename.toUtf8(), stream().GetRealStreamIndex());
-
-  int ret = i.GetFrame(pkt, frame);
-
-  if (ret >= 0) {
-    VideoParams video_params = stream().video_params();
-
-    // Create frame to return
-    output_frame = Frame::Create();
-    output_frame->set_video_params(VideoParams(frame->width,
-                                               frame->height,
-                                               native_pix_fmt_,
-                                               native_channel_count_,
-                                               video_params.pixel_aspect_ratio(),
-                                               video_params.interlacing(),
-                                               divider));
-    output_frame->set_timestamp(timecode);
-    output_frame->allocate();
-
-    uint8_t* copy_data = reinterpret_cast<uint8_t*>(output_frame->data());
-    int copy_linesize = output_frame->linesize_bytes();
-
-    FFmpegBufferToNativeBuffer(frame->data, frame->linesize, &copy_data, &copy_linesize);
-  } else {
-    qWarning() << "Failed to retrieve still image from decoder";
-  }
-
-  i.Close();
-
-  av_frame_free(&frame);
-  av_packet_free(&pkt);
-
-  return output_frame;
-}*/
-
 bool FFmpegDecoder::RetrieveVideoInternal(TexturePtr destination, const rational &timecode, const RetrieveVideoParams &params, const QAtomicInt *cancelled)
 {
   if (AVFramePtr f = RetrieveFrame(timecode, cancelled)) {
@@ -579,63 +523,6 @@ const char *FFmpegDecoder::GetInterlacingModeInFFmpeg(VideoParams::Interlacing i
     return "bff";
   }
 }
-
-/* OLD UNUSED CODE: Keeping this around in case the code proves useful
-
-void FFmpegDecoder::CacheFrameToDisk(AVFrame *f)
-{
-  QFile save_frame(GetIndexFilename().append(QString::number(f->pts)));
-  if (save_frame.open(QFile::WriteOnly)) {
-
-    // Save frame to media index
-    int cached_buffer_sz = av_image_get_buffer_size(static_cast<AVPixelFormat>(f->format),
-                                                    f->width,
-                                                    f->height,
-                                                    1);
-
-    QByteArray cached_frame(cached_buffer_sz, Qt::Uninitialized);
-
-    av_image_copy_to_buffer(reinterpret_cast<uint8_t*>(cached_frame.data()),
-                            cached_frame.size(),
-                            f->data,
-                            f->linesize,
-                            static_cast<AVPixelFormat>(f->format),
-                            f->width,
-                            f->height,
-                            1);
-
-    save_frame.write(qCompress(cached_frame, 1));
-    save_frame.close();
-
-    DiskManager::instance()->CreatedFile(save_frame.fileName(), QByteArray());
-  }
-
-  // See if we stored this frame in the disk cache
-
-  QByteArray frame_loader;
-  if (!got_frame) {
-    QFile compressed_frame(GetIndexFilename().append(QString::number(target_ts)));
-    if (compressed_frame.exists()
-        && compressed_frame.size() > 0
-        && compressed_frame.open(QFile::ReadOnly)) {
-      DiskManager::instance()->Accessed(compressed_frame.fileName());
-
-      // Read data
-      frame_loader = qUncompress(compressed_frame.readAll());
-
-      av_image_fill_arrays(input_data,
-                           input_linesize,
-                           reinterpret_cast<uint8_t*>(frame_loader.data()),
-                           static_cast<AVPixelFormat>(avstream_->codecpar->format),
-                           avstream_->codecpar->width,
-                           avstream_->codecpar->height,
-                           1);
-
-      got_frame = true;
-    }
-  }
-}
-*/
 
 void FFmpegDecoder::ClearFrameCache()
 {
