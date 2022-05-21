@@ -23,7 +23,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-#include "codec/ffmpeg/ffmpegdecoder.h"
+#include "codec/ffmpeg/decode/ffmpegdecoder.h"
 #include "codec/planarfiledevice.h"
 #include "codec/oiio/oiiodecoder.h"
 #include "common/ffmpegutils.h"

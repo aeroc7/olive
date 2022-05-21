@@ -14,11 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-add_subdirectory(decode)
-
 set(OLIVE_SOURCES
   ${OLIVE_SOURCES}
-  codec/ffmpeg/ffmpegencoder.cpp
-  codec/ffmpeg/ffmpegencoder.h
+  codec/ffmpeg/decode/ffmpegdecoder.cpp
+  codec/ffmpeg/decode/ffmpegdecoder.h
   PARENT_SCOPE
 )
