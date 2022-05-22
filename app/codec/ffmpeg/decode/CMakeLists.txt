@@ -18,5 +18,7 @@ set(OLIVE_SOURCES
   ${OLIVE_SOURCES}
   codec/ffmpeg/decode/ffmpegdecoder.cpp
   codec/ffmpeg/decode/ffmpegdecoder.h
+  codec/ffmpeg/decode/ffmpeginstance.cpp
+  codec/ffmpeg/decode/ffmpeginstance.h
   PARENT_SCOPE
 )

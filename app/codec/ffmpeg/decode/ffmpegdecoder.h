@@ -22,10 +22,10 @@
 #define FFMPEGDECODER_H
 
 #include "../ffmpegwrappers.h"
+#include "ffmpeginstance.h"
 
 extern "C" {
 #include <libavfilter/avfilter.h>
-#include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 #include <libswresample/swresample.h>
 }
@@ -68,65 +68,6 @@ protected:
   virtual void CloseInternal() override;
 
 private:
-  class Instance
-  {
-  public:
-    Instance();
-
-    ~Instance()
-    {
-      Close();
-    }
-
-    bool Open(const char* filename, int stream_index);
-
-    void Close();
-
-    /**
-     * @brief Uses the FFmpeg API to retrieve a packet (stored in pkt_) and decode it (stored in frame_)
-     *
-     * @return
-     *
-     * An FFmpeg error code, or >= 0 on success
-     */
-    int GetFrame(AVPacket* pkt, AVFrame* frame);
-
-    const char *GetSubtitleHeader() const;
-
-    int GetSubtitle(AVPacket* pkt, AVSubtitle* sub);
-
-    int GetPacket(AVPacket *pkt);
-
-    void Seek(int64_t timestamp);
-
-    AVFormatContext* fmt_ctx() const
-    {
-      return fmt_ctx_;
-    }
-
-    AVStream* avstream() const
-    {
-      return avstream_;
-    }
-
-  private:
-    AVFormatContext* fmt_ctx_;
-    AVCodecContext* codec_ctx_;
-    AVStream* avstream_;
-    AVDictionary* opts_;
-
-  };
-
-  /**
-   * @brief Handle an FFmpeg error code
-   *
-   * Uses the FFmpeg API to retrieve a descriptive string for this error code and sends it to Error(). As such, this
-   * function also automatically closes the Decoder.
-   *
-   * @param error_code
-   */
-  static QString FFmpegError(int error_code);
-
   bool InitScaler(const RetrieveVideoParams &params);
   void FreeScaler();
 
@@ -159,7 +100,7 @@ private:
   bool cache_at_zero_;
   bool cache_at_eof_;
 
-  Instance instance_;
+  DecoderInstance instance_;
 
 };
 

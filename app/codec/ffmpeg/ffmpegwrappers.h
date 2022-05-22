@@ -26,6 +26,7 @@ extern "C" {
 #include <render/videoparams.h>
 
 #include <memory>
+#include <array>
 
 namespace olive {
 using AVFramePtr = std::shared_ptr<AVFrame>;
@@ -80,6 +81,8 @@ constexpr const char *GetInterlacingModeInFFmpeg(VideoParams::Interlacing interl
 
   return "bff";
 }
+
+QString FFmpegErrorCodeToStr(int error_code);
 }  // namespace olive
 
 #endif  // FFMPEGWRAPPERS_H
