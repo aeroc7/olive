@@ -762,7 +762,7 @@ void FFmpegDecoder::RemoveFirstFrame()
   cache_at_zero_ = false;
 }
 
-VideoParams FFmpegDecoder::GetParamsForTexture(const Decoder::RetrieveVideoParams &p) const
+VideoParams FFmpegDecoder::GetParamsForTexture(const Decoder::RetrieveVideoParams &p)
 {
   return VideoParams(instance_.avstream()->codecpar->width,
                      instance_.avstream()->codecpar->height,
